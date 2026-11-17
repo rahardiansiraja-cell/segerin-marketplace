@@ -29,14 +29,32 @@ function checkout(){if(!Object.values(cart).some(n=>n>0)){toast("Keranjang masih
 function account(){
 modal(`
 <h2>Akun SEGARIN</h2>
+
+<button class="add wide" id="googleLoginBtn" type="button">
+🌐 Masuk dengan Google
+</button>
+
+<p style="text-align:center">atau gunakan email</p>
+
 <form id="authForm">
 <input class="field" id="authEmail" type="email" placeholder="Email" required>
 <input class="field" id="authPassword" type="password" placeholder="Password (minimal 6 karakter)" required>
 <button class="add wide" type="submit">Masuk</button>
 </form>
-<button class="add wide" id="registerBtn">Daftar Akun Baru</button>
+
+<button class="add wide" id="registerBtn" type="button">Daftar Akun Baru</button>
 <p id="authStatus" class="desc"></p>
 `);
+
+$("#googleLoginBtn").onclick=async()=>{
+$("#authStatus").textContent="Menghubungkan ke Google...";
+const {error}=await sb.auth.signInWithOAuth({
+provider:"google",
+options:{redirectTo:window.location.origin}
+});
+if(error) $("#authStatus").textContent=error.message;
+};
+
 $("#authForm").onsubmit=async e=>{
 e.preventDefault();
 let email=$("#authEmail").value.trim();
@@ -44,6 +62,7 @@ let password=$("#authPassword").value;
 let {data,error}=await sb.auth.signInWithPassword({email,password});
 $("#authStatus").textContent=error?error.message:"Berhasil masuk: "+data.user.email;
 };
+
 $("#registerBtn").onclick=async()=>{
 let email=$("#authEmail").value.trim();
 let password=$("#authPassword").value;
@@ -51,9 +70,8 @@ if(!email||password.length<6){
 $("#authStatus").textContent="Isi email dan password minimal 6 karakter.";
 return;
 }
-let {data,error}=await sb.auth.signUp({email,password});
+let {error}=await sb.auth.signUp({email,password});
 $("#authStatus").textContent=error?error.message:"Pendaftaran berhasil. Silakan cek email untuk verifikasi jika diminta.";
 };
-}
-function dashboard(role){$("#dashboard").classList.remove("hidden");$("#dashTitle").textContent="Dashboard "+role;let orders=JSON.parse(localStorage.getItem("sg_orders")||"[]");let sales=orders.reduce((s,o)=>s+o.total,0);let body=role==="Penjual"?`<h3>Tambah produk</h3><form id="newProduct"><input class="field" name="name" placeholder="Nama produk" required><select class="field" name="cat"><option>Seafood</option><option>Sayuran</option></select><input class="field" name="emoji" placeholder="Emoji produk, contoh 🐟" value="🥬"><input class="field" name="price" type="number" min="1" placeholder="Harga" required><select class="field" name="unit"><option>kg</option><option>ikat</option><option>pack</option></select><button class="add wide">Tambah produk</button></form><h3>Produk saat ini</h3>${products.map(p=>`<div class="row">${p.emoji} ${esc(p.name)} <b>${rupiah(p.price)}</b></div>`).join("")}`:role==="Admin"?`<div class="dashgrid"><div class="stat"><b>${products.length}</b>Produk</div><div class="stat"><b>${orders.length}</b>Pesanan demo</div><div class="stat"><b>${rupiah(sales)}</b>Nilai pesanan demo</div></div><h3>Daftar pesanan demo</h3>${orders.map(o=>`<div class="row"><span>${esc(o.id)} · ${esc(o.name)}</span><b>${rupiah(o.total)}</b></div>`).join("")||"Belum ada pesanan."}`:`<div class="dashgrid"><div class="stat"><b>${products.length}</b>Produk tersedia</div><div class="stat"><b>${Object.values(cart).reduce((a,b)=>a+b,0)}</b>Item keranjang</div></div><p>Silakan pilih produk di katalog dan lanjutkan checkout demo.</p>`;$("#dashContent").innerHTML=body;$("#dashboard").scrollIntoView({behavior:"smooth"});let form=$("#newProduct");if(form)form.onsubmit=e=>{e.preventDefault();let f=new FormData(form);products.push({id:Date.now(),name:f.get("name"),cat:f.get("cat"),emoji:f.get("emoji"),price:Number(f.get("price")),unit:f.get("unit"),desc:"Produk mitra SEGARIN"});save();render();dashboard("Penjual");toast("Produk ditambahkan")}}
+}function dashboard(role){$("#dashboard").classList.remove("hidden");$("#dashTitle").textContent="Dashboard "+role;let orders=JSON.parse(localStorage.getItem("sg_orders")||"[]");let sales=orders.reduce((s,o)=>s+o.total,0);let body=role==="Penjual"?`<h3>Tambah produk</h3><form id="newProduct"><input class="field" name="name" placeholder="Nama produk" required><select class="field" name="cat"><option>Seafood</option><option>Sayuran</option></select><input class="field" name="emoji" placeholder="Emoji produk, contoh 🐟" value="🥬"><input class="field" name="price" type="number" min="1" placeholder="Harga" required><select class="field" name="unit"><option>kg</option><option>ikat</option><option>pack</option></select><button class="add wide">Tambah produk</button></form><h3>Produk saat ini</h3>${products.map(p=>`<div class="row">${p.emoji} ${esc(p.name)} <b>${rupiah(p.price)}</b></div>`).join("")}`:role==="Admin"?`<div class="dashgrid"><div class="stat"><b>${products.length}</b>Produk</div><div class="stat"><b>${orders.length}</b>Pesanan demo</div><div class="stat"><b>${rupiah(sales)}</b>Nilai pesanan demo</div></div><h3>Daftar pesanan demo</h3>${orders.map(o=>`<div class="row"><span>${esc(o.id)} · ${esc(o.name)}</span><b>${rupiah(o.total)}</b></div>`).join("")||"Belum ada pesanan."}`:`<div class="dashgrid"><div class="stat"><b>${products.length}</b>Produk tersedia</div><div class="stat"><b>${Object.values(cart).reduce((a,b)=>a+b,0)}</b>Item keranjang</div></div><p>Silakan pilih produk di katalog dan lanjutkan checkout demo.</p>`;$("#dashContent").innerHTML=body;$("#dashboard").scrollIntoView({behavior:"smooth"});let form=$("#newProduct");if(form)form.onsubmit=e=>{e.preventDefault();let f=new FormData(form);products.push({id:Date.now(),name:f.get("name"),cat:f.get("cat"),emoji:f.get("emoji"),price:Number(f.get("price")),unit:f.get("unit"),desc:"Produk mitra SEGARIN"});save();render();dashboard("Penjual");toast("Produk ditambahkan")}}
 $("#search").addEventListener("input",render);document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("active",x===b));render()});$("#cartBtn").onclick=showCart;$("#accountBtn").onclick=account;$("#sellerBtn").onclick=()=>dashboard("Penjual");$("#closeModal").onclick=close;$("#modal").onclick=e=>{if(e.target.id==="modal")close()};$("#closeDash").onclick=()=>$("#dashboard").classList.add("hidden");render();cartCount();
