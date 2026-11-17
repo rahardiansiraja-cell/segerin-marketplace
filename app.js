@@ -2,19 +2,21 @@ const sb = window.supabase.createClient(
   "https://ratvtcqgxarnytxuhyiq.supabase.co",
   "sb_publishable_e8-2J7kgB6HmIiHE2DVV7w_3-vrhkkJ"
 );
-{id:1,name:"Ikan Kakap Merah",cat:"Seafood",emoji:"🐟",price:65000,unit:"kg",desc:"Ikan segar pilihan"},
-{id:2,name:"Udang Vaname",cat:"Seafood",emoji:"🦐",price:78000,unit:"kg",desc:"Udang pilihan pemasok"},
-{id:3,name:"Cumi Segar",cat:"Seafood",emoji:"🦑",price:69000,unit:"kg",desc:"Cocok untuk aneka masakan"},
-{id:4,name:"Ikan Bandeng",cat:"Seafood",emoji:"🐠",price:38000,unit:"kg",desc:"Pilihan keluarga"},
-{id:5,name:"Bayam Hijau",cat:"Sayuran",emoji:"🥬",price:8000,unit:"ikat",desc:"Sayuran panen pilihan"},
-{id:6,name:"Wortel",cat:"Sayuran",emoji:"🥕",price:12000,unit:"kg",desc:"Segar dan renyah"},
-{id:7,name:"Brokoli",cat:"Sayuran",emoji:"🥦",price:22000,unit:"kg",desc:"Sayuran hijau pilihan"},
-{id:8,name:"Tomat Merah",cat:"Sayuran",emoji:"🍅",price:14000,unit:"kg",desc:"Matang pilihan"}];
-let products=JSON.parse(localStorage.getItem("sg_products")||"null")||initial;
-let cart=JSON.parse(localStorage.getItem("sg_cart")||"{}"),filter="Semua";
-const $=s=>document.querySelector(s),rupiah=n=>"Rp"+Number(n).toLocaleString("id-ID");
-function save(){localStorage.setItem("sg_products",JSON.stringify(products));localStorage.setItem("sg_cart",JSON.stringify(cart))}
-function toast(t){let x=$("#toast");x.textContent=t;x.style.display="block";setTimeout(()=>x.style.display="none",2100)}
+
+const initial = [
+  {id:1,name:"Ikan Kakap Merah",cat:"Seafood",emoji:"🐟",price:65000,unit:"kg",desc:"Ikan segar pilihan"},
+  {id:2,name:"Udang Vaname",cat:"Seafood",emoji:"🦐",price:78000,unit:"kg",desc:"Udang pilihan pemasok"},
+  {id:3,name:"Cumi Segar",cat:"Seafood",emoji:"🦑",price:69000,unit:"kg",desc:"Cocok untuk aneka masakan"},
+  {id:4,name:"Ikan Bandeng",cat:"Seafood",emoji:"🐠",price:38000,unit:"kg",desc:"Pilihan keluarga"},
+  {id:5,name:"Bayam Hijau",cat:"Sayuran",emoji:"🥬",price:8000,unit:"ikat",desc:"Sayuran panen pilihan"},
+  {id:6,name:"Wortel",cat:"Sayuran",emoji:"🥕",price:12000,unit:"kg",desc:"Segar dan renyah"},
+  {id:7,name:"Brokoli",cat:"Sayuran",emoji:"🥦",price:22000,unit:"kg",desc:"Sayuran hijau pilihan"},
+  {id:8,name:"Tomat Merah",cat:"Sayuran",emoji:"🍅",price:14000,unit:"kg",desc:"Matang pilihan"}];
+let products = JSON.parse(localStorage.getItem("sg_products") || "null") || initial;
+let cart = JSON.parse(localStorage.getItem("sg_cart") || "{}");
+let filter = "Semua";
+const $ = s => document.querySelector(s);
+const rupiah = n => "Rp" + Number(n).toLocaleString("id-ID");
 function render(){let q=$("#search").value.toLowerCase();let list=products.filter(p=>(filter==="Semua"||p.cat===filter)&&p.name.toLowerCase().includes(q));$("#products").innerHTML=list.map(p=>`<article class="product"><div class="photo">${p.emoji}</div><div class="pbody"><span class="tag">${p.cat} · ${p.tag||"Fresh"}</span><h3>${esc(p.name)}</h3><div class="desc">${esc(p.desc||"Produk segar pilihan")}</div><div class="price">${rupiah(p.price)} <small>/${p.unit}</small></div><button class="add" onclick="add(${p.id})">+ Tambah ke keranjang</button></div></article>`).join("")||"<p>Produk tidak ditemukan.</p>"}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function add(id){cart[id]=(cart[id]||0)+1;save();cartCount();toast("Produk ditambahkan ke keranjang")}
