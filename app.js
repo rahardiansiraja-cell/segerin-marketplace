@@ -60,7 +60,14 @@ e.preventDefault();
 let email=$("#authEmail").value.trim();
 let password=$("#authPassword").value;
 let {data,error}=await sb.auth.signInWithPassword({email,password});
-$("#authStatus").textContent=error?error.message:"Berhasil masuk: "+data.user.email;
+if(error){
+  $("#authStatus").textContent=error.message;
+  return;
+}
+$("#authStatus").textContent="Berhasil masuk: "+data.user.email;
+if(data.user.email==="segarinfreshmarket@gmail.com"){
+  dashboard("Admin");
+}
 };
 
 $("#registerBtn").onclick=async()=>{
