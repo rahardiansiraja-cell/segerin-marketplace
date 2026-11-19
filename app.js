@@ -2,7 +2,22 @@ const sb = window.supabase.createClient(
   "https://ratvtcqgxarnytxuhyiq.supabase.co",
   "sb_publishable_e8-2J7kgB6HmIiHE2DVV7w_3-vrhkkJ"
 );
+sb.auth.onAuthStateChange((event, session) => {
+  if (
+    (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
+    session?.user?.email
+  ) {
+    close();
 
+    const role =
+      session.user.email.toLowerCase() ===
+      "segarinfreshmarket@gmail.com"
+        ? "Admin"
+        : "Pembeli";
+
+    dashboard(role);
+  }
+});
 const initial = [
   {id:1,name:"Ikan Kakap Merah",cat:"Seafood",emoji:"🐟",price:65000,unit:"kg",desc:"Ikan segar pilihan"},
   {id:2,name:"Udang Vaname",cat:"Seafood",emoji:"🦐",price:78000,unit:"kg",desc:"Udang pilihan pemasok"},
@@ -14,6 +29,29 @@ const initial = [
   {id:8,name:"Tomat Merah",cat:"Sayuran",emoji:"🍅",price:14000,unit:"kg",desc:"Matang pilihan"}];
 let products = JSON.parse(localStorage.getItem("sg_products") || "null") || initial;
 let cart = JSON.parse(localStorage.getItem("sg_cart") || "{}");
+function save() {
+  localStorage.setItem("sg_products", JSON.stringify(products));
+  localStorage.setItem("sg_cart", JSON.stringify(cart));
+}
+
+function toast(message) {
+  let el = document.getElementById("sgToast");
+
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "sgToast";
+    el.style.cssText = "position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#222;color:white;padding:12px 20px;border-radius:10px;z-index:99999;";
+    document.body.appendChild(el);
+  }
+
+  el.textContent = message;
+  el.style.display = "block";
+
+  clearTimeout(window.sgToastTimer);
+  window.sgToastTimer = setTimeout(() => {
+    el.style.display = "none";
+  }, 2500);
+}
 let filter = "Semua";
 const $ = s => document.querySelector(s);
 const rupiah = n => "Rp" + Number(n).toLocaleString("id-ID");
@@ -65,9 +103,6 @@ if(error){
   return;
 }
 $("#authStatus").textContent="Berhasil masuk: "+data.user.email;
-if(data.user.email==="segarinfreshmarket@gmail.com"){
-  dashboard("Admin");
-}
 };
 
 $("#registerBtn").onclick=async()=>{
